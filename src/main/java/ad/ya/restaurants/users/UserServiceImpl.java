@@ -2,11 +2,11 @@ package ad.ya.restaurants.users;
 
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
-
-import java.util.List;
-import java.util.Optional;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @ToString
@@ -15,38 +15,34 @@ public class UserServiceImpl implements UserService {
     private final UserRepository repository;
     private final UserMapper mapper;
 
+
+    @Override
+    public Page<UserDto> findAll(Pageable pageable) {
+        return repository.findAll(pageable).map(this::toDto);
+    }
+
     @Override
     public UserDto saveOrUpdate(UserDto userDto) {
-        User u = convert(userDto);
-        User savedUsed = repository.saveAndFlush(u);
-        return new UserDto().setId(savedUsed.getId());
+        return toDto(repository.saveAndFlush(toEntity(userDto)));
     }
 
-
-    private User convert(UserDto dto) {
-        return new User().setId(dto.getId());
+    @Override
+    public Optional<UserDto> findById(long id) {
+        return repository.findById(id).map(this::toDto);
     }
+
+    @Override
+    public void deleteById(long id) {
+        repository.deleteById(id);
+    }
+
 
     private UserDto toDto(User user) {
         return mapper.toDto(user);
     }
 
-    private User toEntity(UserDto dto) {
-        return mapper.toEntity(dto);
+    private User toEntity(UserDto userDto) {
+        return mapper.toEntity(userDto);
     }
 
-    private List<UserDto> toDto(List<User> users){
-        return users.stream().map(mapper::toDto).toList();
-    }
-
-
-    @Override
-    public Optional findById(Long id) {
-        return repository.findById(id).map(this::toDto);
-    }
-
-    @Override
-     public void deleteById(Long id) {
-        repository.deleteById(id);
-     }
 }
