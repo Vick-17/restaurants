@@ -13,5 +13,4 @@ import lombok.experimental.Accessors;
 public class User {
     @Id
     private long id;
-
 }
